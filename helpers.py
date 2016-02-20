@@ -1,9 +1,7 @@
-import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 from PIL import Image
 from skimage import color
-import numpy as np
-from object_recognition.keras_helpers import normalize_lab
 
 
 def load_demo_image():

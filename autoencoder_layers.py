@@ -1,10 +1,10 @@
 import theano
-from keras.backend.theano_backend import _on_gpu, conv2d
+from keras import backend as K
+from keras.backend.theano_backend import _on_gpu
 from keras.layers.convolutional import Convolution2D
 from keras.layers.core import Dense, Layer
-from keras import backend as K
-from theano.sandbox.cuda import dnn
 from theano import tensor as T
+from theano.sandbox.cuda import dnn
 
 
 class SumLayer(Layer):

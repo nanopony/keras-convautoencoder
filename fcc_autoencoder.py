@@ -2,8 +2,8 @@ import numpy as np
 from keras import models
 from keras.datasets import mnist
 from keras.layers.core import Dense
-from autoencoder.autoencoder_layers import DependentDense
-from autoencoder.helpers import show_image, tile_raster_images, show_representations
+from autoencoder_layers import DependentDense
+from helpers import show_image, tile_raster_images, show_representations
 
 
 def plot_weights(weights):
@@ -43,7 +43,7 @@ def build_model(encoder_dim=50, bottleneck_dim=20):
 if __name__ == '__main__':
     (X_train, y_train), (X_test, y_test) = load_data()
     model, encoder = build_model()
-    if  False:
+    if not False:
         model.compile(optimizer='rmsprop', loss='mean_squared_error')
         model.fit(X_train, X_train, nb_epoch=200, batch_size=512, validation_split=0.2, )
         model.save_weights('./fcc.neuro', overwrite=True)

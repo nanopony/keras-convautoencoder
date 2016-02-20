@@ -3,8 +3,8 @@ from keras import models
 from keras.datasets import mnist
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, UpSampling2D
 from keras.layers.core import Dense, Activation, Dropout, Flatten, Reshape
-from autoencoder.autoencoder_layers import DependentDense, SumLayer, Deconvolution2D
-from autoencoder.helpers import show_image, show_representations
+from autoencoder_layers import DependentDense, Deconvolution2D
+from helpers import show_representations
 
 
 def load_data():
@@ -40,10 +40,10 @@ def build_model(nb_filters=32, nb_pool=2, nb_conv=3):
 if __name__ == '__main__':
     (X_train, y_train), (X_test, y_test) = load_data()
     model = build_model()
-    if False:
+    if not False:
         model.compile(optimizer='rmsprop', loss='mean_squared_error')
         model.summary()
-        model.fit(X_train, X_train, nb_epoch=12, batch_size=512, validation_split=0.2, )
+        model.fit(X_train, X_train, nb_epoch=20, batch_size=512, validation_split=0.2, )
         model.save_weights('./conv.neuro', overwrite=True)
     else:
         model.load_weights('./conv.neuro')
