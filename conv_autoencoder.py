@@ -1,5 +1,6 @@
 import numpy as np
 from keras import models
+from keras.callbacks import EarlyStopping
 from keras.datasets import mnist
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, UpSampling2D
 from keras.layers.core import Dense, Activation, Dropout, Flatten, Reshape
@@ -43,7 +44,7 @@ if __name__ == '__main__':
     if not False:
         model.compile(optimizer='rmsprop', loss='mean_squared_error')
         model.summary()
-        model.fit(X_train, X_train, nb_epoch=20, batch_size=512, validation_split=0.2, )
+        model.fit(X_train, X_train, nb_epoch=50, batch_size=512, validation_split=0.2, callbacks=[EarlyStopping(patience=3)])
         model.save_weights('./conv.neuro', overwrite=True)
     else:
         model.load_weights('./conv.neuro')
