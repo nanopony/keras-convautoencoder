@@ -170,20 +170,20 @@ def show_image(img, title=None, bw=False, per_row=2):
     plt.show()
 
 
-def show_representations(model, X_test, number=5):
+def show_representations(model, X_test, number=5, dim=28, do_reshape = True):
     representations = model.predict(X_test[:number ** 2, ...])
 
     def flat_to_shaped(x):
-        return x.reshape((x.shape[0], 28, 28))
+        return x.reshape((x.shape[0], dim, dim)) if do_reshape else x
 
     _r = tile_raster_images(
             X=flat_to_shaped(representations),
-            img_shape=(28, 28), tile_shape=(number, number),
+            img_shape=(dim,dim), tile_shape=(number, number),
             tile_spacing=(1, 1))
 
     _o = tile_raster_images(
             X=flat_to_shaped(X_test),
-            img_shape=(28, 28), tile_shape=(number, number),
+            img_shape=(dim,dim), tile_shape=(number, number),
             tile_spacing=(1, 1))
 
     show_image([(_o, 'Source'), (_r, 'Representations')])

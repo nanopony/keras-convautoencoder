@@ -21,20 +21,26 @@ def load_data():
 
 def build_model(nb_filters=32, nb_pool=2, nb_conv=3):
     model = models.Sequential()
+    d = Dense(30)
     c = Convolution2D(nb_filters, nb_conv, nb_conv, border_mode='same', input_shape=(1, 28, 28))
+    # =========      ENCODER     ========================
     model.add(c)
     model.add(Activation('tanh'))
     model.add(MaxPooling2D(pool_size=(nb_pool, nb_pool)))
     model.add(Dropout(0.25))
+    # =========      BOTTLENECK     ======================
     model.add(Flatten())
-    d =Dense(30)
     model.add(d)
     model.add(Activation('tanh'))
+    # =========      BOTTLENECK^-1   =====================
     model.add(DependentDense(nb_filters * 14 * 14, d))
-    model.add(Reshape((nb_filters, 14, 14)))
-    model.add(UpSampling2D(size=(nb_pool, nb_pool)))
     model.add(Activation('tanh'))
+    model.add(Reshape((nb_filters, 14, 14)))
+    # =========      DECODER     =========================
+    model.add(UpSampling2D(size=(nb_pool, nb_pool)))
     model.add(Deconvolution2D(c, border_mode='same'))
+    model.add(Activation('tanh'))
+
     return model
 
 
@@ -44,7 +50,8 @@ if __name__ == '__main__':
     if not False:
         model.compile(optimizer='rmsprop', loss='mean_squared_error')
         model.summary()
-        model.fit(X_train, X_train, nb_epoch=50, batch_size=512, validation_split=0.2, callbacks=[EarlyStopping(patience=3)])
+        model.fit(X_train, X_train, nb_epoch=50, batch_size=512, validation_split=0.2,
+                  callbacks=[EarlyStopping(patience=3)])
         model.save_weights('./conv.neuro', overwrite=True)
     else:
         model.load_weights('./conv.neuro')
