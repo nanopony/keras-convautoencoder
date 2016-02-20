@@ -59,7 +59,6 @@ def tile_raster_images(X, img_shape, tile_shape, tile_spacing=(0, 0),
 
     """
 
-    assert len(img_shape) == 2
     assert len(tile_shape) == 2
     assert len(tile_spacing) == 2
 
@@ -73,47 +72,14 @@ def tile_raster_images(X, img_shape, tile_shape, tile_spacing=(0, 0),
     #                tile_spacing[1]
     out_shape = [
         (ishp + tsp) * tshp - tsp
-        for ishp, tshp, tsp in zip(img_shape, tile_shape, tile_spacing)
+        for ishp, tshp, tsp in zip(X[0].shape[:2], tile_shape, tile_spacing)
         ]
+    if len(X[0].shape)>2:
+        out_shape.append(X[0].shape[2])
 
-    if isinstance(X, tuple):
-        assert len(X) == 4
-        # Create an output np ndarray to store the image
-        if output_pixel_vals:
-            out_array = np.zeros((out_shape[0], out_shape[1], 4),
-                                 dtype='uint8')
-        else:
-            out_array = np.zeros((out_shape[0], out_shape[1], 4),
-                                 dtype=X.dtype)
-
-        # colors default to 0, alpha defaults to 1 (opaque)
-        if output_pixel_vals:
-            channel_defaults = [0, 0, 0, 255]
-        else:
-            channel_defaults = [0., 0., 0., 1.]
-
-        for i in range(4):
-            if X[i] is None:
-                # if channel is None, fill it with zeros of the correct
-                # dtype
-                dt = out_array.dtype
-                if output_pixel_vals:
-                    dt = 'uint8'
-                out_array[:, :, i] = np.zeros(
-                        out_shape,
-                        dtype=dt
-                ) + channel_defaults[i]
-            else:
-                # use a recurrent call to compute the channel and store it
-                # in the output
-                out_array[:, :, i] = tile_raster_images(
-                        X[i], img_shape, tile_shape, tile_spacing,
-                        scale_rows_to_unit_interval, output_pixel_vals)
-        return out_array
-
-    else:
+    if True:
         # if we are dealing with only one channel
-        H, W = img_shape
+        H, W = X[0].shape[:2]
         Hs, Ws = tile_spacing
 
         # generate a matrix to store the output
@@ -125,24 +91,16 @@ def tile_raster_images(X, img_shape, tile_shape, tile_spacing=(0, 0),
         for tile_row in range(tile_shape[0]):
             for tile_col in range(tile_shape[1]):
                 if tile_row * tile_shape[1] + tile_col < X.shape[0]:
-                    this_x = X[tile_row * tile_shape[1] + tile_col]
-                    if scale_rows_to_unit_interval:
-                        # if we should scale values to be between 0 and 1
-                        # do this by calling the `scale_to_unit_interval`
-                        # function
-                        this_img = scale_to_unit_interval(
-                                this_x.reshape(img_shape))
-                    else:
-                        this_img = this_x.reshape(img_shape)
-                    # add the slice to the corresponding position in the
-                    # output array
+                    this_img = X[tile_row * tile_shape[1] + tile_col]
+
+
                     c = 1
                     if output_pixel_vals:
                         c = 255
                     out_array[
                     tile_row * (H + Hs): tile_row * (H + Hs) + H,
-                    tile_col * (W + Ws): tile_col * (W + Ws) + W
-                    ] = this_img * c
+                    tile_col * (W + Ws): tile_col * (W + Ws) + W,:
+                    ] = this_img*c
         return out_array
 
 
@@ -170,7 +128,7 @@ def show_image(img, title=None, bw=False, per_row=2):
     plt.show()
 
 
-def show_representations(model, X_test, number=5, dim=28, do_reshape = True):
+def show_representations(model, X_test, number=5, dim=28, do_reshape=True):
     representations = model.predict(X_test[:number ** 2, ...])
 
     def flat_to_shaped(x):
@@ -178,15 +136,19 @@ def show_representations(model, X_test, number=5, dim=28, do_reshape = True):
 
     _r = tile_raster_images(
             X=flat_to_shaped(representations),
-            img_shape=(dim,dim), tile_shape=(number, number),
+            img_shape=(dim, dim), tile_shape=(number, number),
             tile_spacing=(1, 1))
 
     _o = tile_raster_images(
             X=flat_to_shaped(X_test),
-            img_shape=(dim,dim), tile_shape=(number, number),
+            img_shape=(dim, dim), tile_shape=(number, number),
             tile_spacing=(1, 1))
 
     show_image([(_o, 'Source'), (_r, 'Representations')])
+
+
+def keras2rgb(t):
+    return np.swapaxes(np.swapaxes(t, 1, 2), 2, 3)
 
 
 if __name__ == '__main__':
