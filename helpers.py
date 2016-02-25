@@ -2,6 +2,31 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 from skimage import color
+import numpy.ma as ma
+
+def keras_arr2rgb_arr(arr):
+    return np.transpose(arr, (0, 2, 3, 1))
+
+def make_mosaic(imgs, nrows, ncols, border=1):
+
+    """
+    Given a set of images with all the same shape, makes a
+    mosaic with nrows and ncols
+    """
+    nimgs = imgs.shape[0]
+    imshape = imgs.shape[1:]
+    mosaic = ma.masked_all((nrows * imshape[0] + (nrows - 1) * border,
+                            ncols * imshape[1] + (ncols - 1) * border, 3),
+                           dtype=np.float32)
+
+    paddedh = imshape[0] + border
+    paddedw = imshape[1] + border
+    for i in range(nimgs):
+        row = int(np.floor(i / ncols))
+        col = i % ncols
+
+        mosaic[row * paddedh:row * paddedh + imshape[0], col * paddedw:col * paddedw + imshape[1]] = imgs[i].reshape(imshape)
+    return mosaic
 
 
 def load_demo_image():
