@@ -48,7 +48,7 @@ def build_model(nb_filters=32, nb_pool=2, nb_conv=3):
 if __name__ == '__main__':
     (X_train, y_train), (X_test, y_test) = load_data()
     model = build_model()
-    if  False:
+    if not False:
         model.compile(optimizer='rmsprop', loss='mean_squared_error')
         model.summary()
         model.fit(X_train, X_train, nb_epoch=50, batch_size=512, validation_split=0.2,
