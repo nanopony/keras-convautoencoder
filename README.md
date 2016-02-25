@@ -5,7 +5,9 @@ simple fully connected autoencoder. It might feel be a bit hacky towards, howeve
 ## Convolutional autoencoder [CAE] example 
 l
 Run conv_autoencoder.py.
-Conv layer (32 kern of 3x3) -> MaxPool (2x2) -> Dense (10) -> UpSample (2x2) -> DeConv layer (32 kern of 3x3)
+Conv layer (32 kern of 3x3) -> MaxPool (2x2) -> Dense (10) -> DePool (2x2) -> DeConv layer (32 kern of 3x3)
+Weights of Conv and Deconv layers are tied;
+MaxPool and DePool shares activated neurons. 
 ![ConvAutoEncoder MNIST representations](./img/cc.png "ConvAutoEncoder MNIST representations")
 
 ## FCC autoencoder example

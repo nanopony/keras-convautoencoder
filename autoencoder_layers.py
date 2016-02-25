@@ -1,7 +1,7 @@
 import theano
 from keras import backend as K
 from keras.backend.theano_backend import _on_gpu
-from keras.layers.convolutional import Convolution2D
+from keras.layers.convolutional import Convolution2D, UpSampling2D
 from keras.layers.core import Dense, Layer
 from theano import tensor as T
 from theano.sandbox.cuda import dnn
@@ -19,6 +19,49 @@ class SumLayer(Layer):
     def get_output(self, train=False):
         X = self.get_input(train)
         return X.sum(axis=1, keepdims=True)
+
+
+class DePool2D(UpSampling2D):
+    '''Simplar to UpSample, yet traverse only maxpooled elements
+
+    # Input shape
+        4D tensor with shape:
+        `(samples, channels, rows, cols)` if dim_ordering='th'
+        or 4D tensor with shape:
+        `(samples, rows, cols, channels)` if dim_ordering='tf'.
+
+    # Output shape
+        4D tensor with shape:
+        `(samples, channels, upsampled_rows, upsampled_cols)` if dim_ordering='th'
+        or 4D tensor with shape:
+        `(samples, upsampled_rows, upsampled_cols, channels)` if dim_ordering='tf'.
+
+    # Arguments
+        size: tuple of 2 integers. The upsampling factors for rows and columns.
+        dim_ordering: 'th' or 'tf'.
+            In 'th' mode, the channels dimension (the depth)
+            is at index 1, in 'tf' mode is it at index 3.
+    '''
+    input_ndim = 4
+
+    def __init__(self, pool2d_layer, *args, **kwargs):
+        self._pool2d_layer = pool2d_layer
+        super().__init__(*args, **kwargs)
+
+    def get_output(self, train=False):
+        X = self.get_input(train)
+        if self.dim_ordering == 'th':
+            output = K.repeat_elements(X, self.size[0], axis=2)
+            output = K.repeat_elements(output, self.size[1], axis=3)
+        elif self.dim_ordering == 'tf':
+            output = K.repeat_elements(X, self.size[0], axis=1)
+            output = K.repeat_elements(output, self.size[1], axis=2)
+        else:
+            raise Exception('Invalid dim_ordering: ' + self.dim_ordering)
+
+        f = T.grad(T.sum(self._pool2d_layer.get_output(train)), wrt=self._pool2d_layer.get_input(train)) * output
+
+        return f
 
 
 def deconv2d_fast(x, kernel, strides=(1, 1), border_mode='valid', dim_ordering='th',
@@ -73,11 +116,11 @@ def deconv2d_fast(x, kernel, strides=(1, 1), border_mode='valid', dim_ordering='
             raise Exception('Border mode not supported: ' + str(border_mode))
 
         conv_out = T.nnet.conv2d(x, kernel,
-                                      border_mode=th_border_mode,
-                                      subsample=strides,
-                                      filter_flip=False,  # <<<<< IMPORTANT 111, dont flip kern
-                                      input_shape=image_shape,
-                                      filter_shape=filter_shape)
+                                 border_mode=th_border_mode,
+                                 subsample=strides,
+                                 filter_flip=False,  # <<<<< IMPORTANT 111, dont flip kern
+                                 input_shape=image_shape,
+                                 filter_shape=filter_shape)
         if border_mode == 'same':
             shift_x = (kernel.shape[2] - 1) // 2
             shift_y = (kernel.shape[3] - 1) // 2
@@ -314,11 +357,11 @@ class Deconvolution2D(Convolution2D):
     def get_output(self, train=False):
         X = self.get_input(train)
         conv_out = deconv2d_fast(X, self.W,
-                            strides=self.subsample,
-                            border_mode=self.border_mode,
-                            dim_ordering=self.dim_ordering,
-                            image_shape=self.input_shape,
-                            filter_shape=self.W_shape)
+                                 strides=self.subsample,
+                                 border_mode=self.border_mode,
+                                 dim_ordering=self.dim_ordering,
+                                 image_shape=self.input_shape,
+                                 filter_shape=self.W_shape)
         if self.dim_ordering == 'th':
             output = conv_out + K.reshape(self.b, (1, self.nb_out_channels, 1, 1))
         elif self.dim_ordering == 'tf':

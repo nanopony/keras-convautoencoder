@@ -4,7 +4,7 @@ from keras.callbacks import EarlyStopping
 from keras.datasets import mnist
 from keras.layers.convolutional import Convolution2D, MaxPooling2D, UpSampling2D
 from keras.layers.core import Dense, Activation, Dropout, Flatten, Reshape
-from autoencoder_layers import DependentDense, Deconvolution2D
+from autoencoder_layers import DependentDense, Deconvolution2D, DePool2D
 from helpers import show_representations
 
 
@@ -23,10 +23,11 @@ def build_model(nb_filters=32, nb_pool=2, nb_conv=3):
     model = models.Sequential()
     d = Dense(30)
     c = Convolution2D(nb_filters, nb_conv, nb_conv, border_mode='same', input_shape=(1, 28, 28))
+    mp =MaxPooling2D(pool_size=(nb_pool, nb_pool))
     # =========      ENCODER     ========================
     model.add(c)
     model.add(Activation('tanh'))
-    model.add(MaxPooling2D(pool_size=(nb_pool, nb_pool)))
+    model.add(mp)
     model.add(Dropout(0.25))
     # =========      BOTTLENECK     ======================
     model.add(Flatten())
@@ -37,7 +38,7 @@ def build_model(nb_filters=32, nb_pool=2, nb_conv=3):
     model.add(Activation('tanh'))
     model.add(Reshape((nb_filters, 14, 14)))
     # =========      DECODER     =========================
-    model.add(UpSampling2D(size=(nb_pool, nb_pool)))
+    model.add(DePool2D(mp, size=(nb_pool, nb_pool)))
     model.add(Deconvolution2D(c, border_mode='same'))
     model.add(Activation('tanh'))
 
@@ -47,7 +48,7 @@ def build_model(nb_filters=32, nb_pool=2, nb_conv=3):
 if __name__ == '__main__':
     (X_train, y_train), (X_test, y_test) = load_data()
     model = build_model()
-    if not False:
+    if  False:
         model.compile(optimizer='rmsprop', loss='mean_squared_error')
         model.summary()
         model.fit(X_train, X_train, nb_epoch=50, batch_size=512, validation_split=0.2,

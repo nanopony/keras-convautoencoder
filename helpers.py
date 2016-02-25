@@ -127,24 +127,29 @@ def show_image(img, title=None, bw=False, per_row=2):
     plt.tight_layout()
     plt.show()
 
+def oned_to_flat(o):
+    if o.shape[-1] == 1:
+        o = o.reshape((o.shape[0], o.shape[1]))
+    return (o/o.max()).astype('float64')
 
 def show_representations(model, X_test, number=5, dim=28, do_reshape=True):
     representations = model.predict(X_test[:number ** 2, ...])
 
     def flat_to_shaped(x):
-        return x.reshape((x.shape[0], dim, dim)) if do_reshape else x
+        return x.reshape((x.shape[0], dim, dim,1)) if do_reshape else x
 
     _r = tile_raster_images(
             X=flat_to_shaped(representations),
             img_shape=(dim, dim), tile_shape=(number, number),
-            tile_spacing=(1, 1))
+            tile_spacing=(1, 1), output_pixel_vals=False)
 
     _o = tile_raster_images(
             X=flat_to_shaped(X_test),
             img_shape=(dim, dim), tile_shape=(number, number),
-            tile_spacing=(1, 1))
-
-    show_image([(_o, 'Source'), (_r, 'Representations')])
+            tile_spacing=(1, 1), output_pixel_vals=False)
+    print(_r.min())
+    print(_r.max())
+    show_image([(oned_to_flat(_o), 'Source'), (oned_to_flat(_r), 'Representations')])
 
 
 def keras2rgb(t):
