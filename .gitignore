@@ -10,6 +10,7 @@ build
 .noseids
 tmp/*
 *.neuro
+*.pkl
 *.swp
 *~
 *.mo
