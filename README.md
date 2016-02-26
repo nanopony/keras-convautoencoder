@@ -20,7 +20,8 @@ FСС (50) -> FСС (30) -> FСС (30) -> FСС (50)
 
 ## ConvAutoEncoder on 1100 cars 
 
-Vehicle images are courtecy of German Aerospace Center (DLR)
+Vehicle images are courtesy of German Aerospace Center (DLR)
+
 Remote Sensing Technology Institute, Photogrammetry and Image Analysis
 http://www.dlr.de/eoc/en/desktopdefault.aspx/tabid-5431/9230_read-42467/
 
