@@ -2,6 +2,8 @@
 This is an implementation of weight-tieing layers that can be used to consturct convolutional autoencoder and 
 simple fully connected autoencoder. It might feel be a bit hacky towards, however it does the job.
 
+It requires Python3.x
+
 ## Convolutional autoencoder [CAE] example 
 
 Run conv_autoencoder.py.
