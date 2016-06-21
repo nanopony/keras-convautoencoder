@@ -2,7 +2,7 @@
 This is an implementation of weight-tieing layers that can be used to consturct convolutional autoencoder and 
 simple fully connected autoencoder. It might feel be a bit hacky towards, however it does the job.
 
-It requires Python3.x ([Why?](http://python3wos.appspot.com/)), and keras 0.3.2, e.g. via `pip install keras==0.3.2`.
+It requires Python3.x [Why?](http://python3wos.appspot.com/).
 
 
 ## Convolutional autoencoder [CAE] example 
