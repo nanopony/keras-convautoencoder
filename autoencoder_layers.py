@@ -44,8 +44,8 @@ class DePool2D(UpSampling2D):
     '''
     input_ndim = 4
 
-    def __init__(self, pool2d_layer, *args, **kwargs):
-        self._pool2d_layer = pool2d_layer
+    def __init__(self, master_layer, *args, **kwargs):
+        self._master_layer = master_layer
         super(DePool2D,self).__init__(*args, **kwargs)
 
     def get_output(self, train=False):
@@ -59,7 +59,7 @@ class DePool2D(UpSampling2D):
         else:
             raise Exception('Invalid dim_ordering: ' + self.dim_ordering)
 
-        f = T.grad(T.sum(self._pool2d_layer.get_output(train)), wrt=self._pool2d_layer.get_input(train)) * output
+        f = T.grad(T.sum(self._master_layer.get_output(train)), wrt=self._master_layer.get_input(train)) * output
 
         return f
 
@@ -185,16 +185,16 @@ class Deconvolution2D(Convolution2D):
     '''
     input_ndim = 4
 
-    def __init__(self, binded_conv_layer, nb_out_channels=1, *args, **kwargs):
-        self._binded_conv_layer = binded_conv_layer
+    def __init__(self, master_layer, nb_out_channels=1, *args, **kwargs):
+        self._master_layer = master_layer
         self.nb_out_channels = nb_out_channels
-        kwargs['nb_filter'] = self._binded_conv_layer.nb_filter
-        kwargs['nb_row'] = self._binded_conv_layer.nb_row
-        kwargs['nb_col'] = self._binded_conv_layer.nb_col
+        kwargs['nb_filter'] = self._master_layer.nb_filter
+        kwargs['nb_row'] = self._master_layer.nb_row
+        kwargs['nb_col'] = self._master_layer.nb_col
         super(Deconvolution2D,self).__init__(*args, **kwargs)
 
     def build(self):
-        self.W = self._binded_conv_layer.W.dimshuffle((1, 0, 2, 3))
+        self.W = self._master_layer.W.dimshuffle((1, 0, 2, 3))
         if self.dim_ordering == 'th':
             self.W_shape = (self.nb_out_channels, self.nb_filter, self.nb_row, self.nb_col)
         elif self.dim_ordering == 'tf':
