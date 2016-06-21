@@ -46,7 +46,7 @@ class DePool2D(UpSampling2D):
 
     def __init__(self, pool2d_layer, *args, **kwargs):
         self._pool2d_layer = pool2d_layer
-        super().__init__(*args, **kwargs)
+        super(DePool2D,self).__init__(*args, **kwargs)
 
     def get_output(self, train=False):
         X = self.get_input(train)
@@ -191,7 +191,7 @@ class Deconvolution2D(Convolution2D):
         kwargs['nb_filter'] = self._binded_conv_layer.nb_filter
         kwargs['nb_row'] = self._binded_conv_layer.nb_row
         kwargs['nb_col'] = self._binded_conv_layer.nb_col
-        super().__init__(*args, **kwargs)
+        super(Deconvolution2D,self).__init__(*args, **kwargs)
 
     def build(self):
         self.W = self._binded_conv_layer.W.dimshuffle((1, 0, 2, 3))
@@ -224,7 +224,7 @@ class Deconvolution2D(Convolution2D):
 
     @property
     def output_shape(self):
-        output_shape = list(super().output_shape)
+        output_shape = list(super(Deconvolution2D,self).output_shape)
 
         if self.dim_ordering == 'th':
             output_shape[1] = self.nb_out_channels
@@ -276,7 +276,7 @@ class DependentDense(Dense):
                  W_regularizer=None, b_regularizer=None, activity_regularizer=None,
                  W_constraint=None, b_constraint=None, input_dim=None, **kwargs):
         self.master_layer = master_layer
-        super().__init__(output_dim, **kwargs)
+        super(DependentDense,self).__init__(output_dim, **kwargs)
 
     def build(self):
         self.W = self.master_layer.W.T
