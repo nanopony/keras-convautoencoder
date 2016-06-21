@@ -1,4 +1,3 @@
-import theano
 from keras import backend as K
 from keras.backend.theano_backend import _on_gpu
 from keras.layers.convolutional import Convolution2D, UpSampling2D
