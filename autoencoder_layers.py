@@ -9,7 +9,7 @@ from theano.sandbox.cuda import dnn
 
 class SumLayer(Layer):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super(SumLayer,self).__init__(**kwargs)
 
     @property
     def output_shape(self):
